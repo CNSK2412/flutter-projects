@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
-import '../services/gemini_service.dart';
+import '../services/openai_service.dart';
 import '../services/speech_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/chat_bubble_widget.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
-
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _controller = TextEditingController();
+  TextEditingController _controller = TextEditingController();
   List<Map<String, String>> messages = [];
   SpeechToTextService speechToText = SpeechToTextService();
-  final ScrollController _scrollController = ScrollController();
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -42,7 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
 
-    String botResponse = await GeminiService.fetchResponse(userText);
+    String botResponse = await OpenAIService.fetchResponse(userText);
 
     setState(() {
       messages.add({"sender": "bot", "text": botResponse});
@@ -58,17 +54,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
+      backgroundColor: Colors.white, // Standard White Theme
       appBar: AppBar(
-        title: Text("Gemini AI Chatbot"),
-        actions: [
-          IconButton(
-            icon: Icon(
-                themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
-            onPressed: themeProvider.toggleTheme,
-          )
-        ],
+        title: Text("ChatBot"),
+        backgroundColor: Colors.blue, // Header color
+        elevation: 5,
       ),
       body: Column(
         children: [
@@ -76,6 +67,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               controller: _scrollController,
               itemCount: messages.length,
+              padding: EdgeInsets.all(10),
               itemBuilder: (context, index) {
                 return ChatBubbleWidget(
                   message: messages[index]['text']!,
@@ -84,23 +76,52 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
             child: Row(
               children: [
-                IconButton(icon: Icon(Icons.mic), onPressed: startListening),
+                IconButton(
+                  icon: Icon(Icons.mic, color: Colors.blue),
+                  onPressed: startListening,
+                ),
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: "Type a message...",
-                      border: OutlineInputBorder(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: "Type a message...",
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
+                      ),
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () => sendMessage(_controller.text.trim()),
+                SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.blue,
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.send, color: Colors.white),
+                    onPressed: () => sendMessage(_controller.text.trim()),
+                  ),
                 ),
               ],
             ),

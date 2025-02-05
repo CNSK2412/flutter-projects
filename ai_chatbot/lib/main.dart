@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/theme_provider.dart';
 import 'screens/chat_screen.dart';
+
+class ThemeProvider with ChangeNotifier {
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+}
 
 void main() {
   runApp(MyApp());
@@ -18,7 +28,8 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: themeProvider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+            theme:
+                themeProvider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
             home: ChatScreen(),
           );
         },
