@@ -33,6 +33,7 @@ class _MyAppState extends State<MyApp> {
             ),
       duration: const Duration(milliseconds: 300), // Smooth transition duration
       child: MaterialApp(
+        title: 'E-Library',
         debugShowCheckedModeBanner: false,
         home: HomeScreen(
           isDarkMode: isDarkMode,
@@ -54,7 +55,8 @@ class HomeScreen extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback toggleTheme;
 
-  const HomeScreen({Key? key, required this.isDarkMode, required this.toggleTheme})
+  const HomeScreen(
+      {Key? key, required this.isDarkMode, required this.toggleTheme})
       : super(key: key);
 
   @override
@@ -79,17 +81,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("E-Library", style: TextStyle(color: Colors.white)),
-        backgroundColor: widget.isDarkMode ? Colors.orangeAccent : Colors.blueAccent,
+        backgroundColor:
+            widget.isDarkMode ? Colors.orangeAccent : Colors.blueAccent,
         actions: [
-          IconButton(
-            icon: Icon(
-              widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
-              color: Colors.white,
-            ),
-            onPressed: widget.toggleTheme,
+          Switch(
+            value: widget.isDarkMode,
+            onChanged: (value) {
+              widget.toggleTheme();
+            },
+            activeColor: Colors.white,
+            inactiveThumbColor: Colors.blueAccent,
+            inactiveTrackColor: Colors.white38,
           ),
           IconButton(
-            icon: Icon(isGrid ? Icons.list : Icons.grid_view, color: Colors.white),
+            icon: Icon(isGrid ? Icons.list : Icons.grid_view,
+                color: Colors.white),
             onPressed: () {
               setState(() {
                 isGrid = !isGrid;
@@ -125,12 +131,19 @@ class _HomeScreenState extends State<HomeScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                "All", "Fiction", "Science", "History", "Biography", "Self-Help", "Technology"
+                "All",
+                "Fiction",
+                "Science",
+                "History",
+                "Biography",
+                "Self-Help",
+                "Technology"
               ]
                   .map((category) => Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: ChoiceChip(
-                          label: Text(category, style: const TextStyle(color: Colors.white)),
+                          label: Text(category,
+                              style: const TextStyle(color: Colors.white)),
                           backgroundColor: Colors.blueAccent.withOpacity(0.2),
                           selectedColor: Colors.orangeAccent,
                           selected: selectedCategory == category,
@@ -150,7 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(12),
               child: isGrid
                   ? GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         childAspectRatio: 0.75,
                         crossAxisSpacing: 10,
@@ -184,7 +198,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 child: CachedNetworkImage(
                   imageUrl: book["cover"]!,
                   fit: BoxFit.cover,
@@ -212,14 +227,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget bookListTile(Map<String, String> book) {
     return ListTile(
-      leading: CachedNetworkImage(imageUrl: book["cover"]!, width: 50, fit: BoxFit.cover),
-      title: Text(book["title"]!, style: const TextStyle(color: Colors.orangeAccent)),
+      leading: CachedNetworkImage(
+          imageUrl: book["cover"]!, width: 50, fit: BoxFit.cover),
+      title: Text(book["title"]!,
+          style: const TextStyle(color: Colors.orangeAccent)),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Author: ${book["author"]!}", style: const TextStyle(color: Colors.white70)),
-          Text("Published: ${book["year"]!}", style: const TextStyle(color: Colors.white70)),
-          Text(book["description"]!, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+          Text("Author: ${book["author"]!}",
+              style: const TextStyle(color: Colors.white70)),
+          Text("Published: ${book["year"]!}",
+              style: const TextStyle(color: Colors.white70)),
+          Text(book["description"]!,
+              style: const TextStyle(color: Colors.white54, fontSize: 12)),
         ],
       ),
       onTap: () => openBookDetails(book),
@@ -263,9 +283,11 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
           }
         },
       );
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Download Complete!")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Download Complete!")));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Download Failed!")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Download Failed!")));
     }
   }
 
@@ -297,7 +319,8 @@ List<Map<String, String>> books = [
   {
     "title": "The Future of AI",
     "category": "Technology",
-    "cover": "https://source.unsplash.com/200x300/?tech,ai",
+    "cover":
+        "https://i.pinimg.com/736x/e2/44/c1/e244c15f6e36060c3044484b81e2737f.jpg",
     "pdfUrl":
         "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     "author": "John Doe",
@@ -307,21 +330,151 @@ List<Map<String, String>> books = [
   {
     "title": "Mysterious Island",
     "category": "Fiction",
-    "cover": "https://source.unsplash.com/200x300/?adventure,book",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
     "pdfUrl":
         "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    "author": "Jane Smith",
-    "year": "2022",
-    "description": "An adventure story."
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
   },
   {
-    "title": "World War II History",
-    "category": "History",
-    "cover": "https://images.unsplash.com/photo-1512820790803-83ca734da794",
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
     "pdfUrl":
         "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    "author": "Michael Brown",
-    "year": "2020",
-    "description": "An in-depth analysis of World War II."
-  }
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
+  {
+    "title": "Mysterious Island",
+    "category": "Fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jules Verne",
+    "year": "1874",
+    "description": "An exploration of a mysterious island."
+  },
 ];
