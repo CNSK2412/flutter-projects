@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -22,9 +22,9 @@ class _MyAppState extends State<MyApp> {
       title: 'E-Library',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: const Color(0xFF80C4FF), // Light blue
-        scaffoldBackgroundColor: const Color(0xFFFFF8E7), // Soft beige
-        textTheme: GoogleFonts.latoTextTheme(),
+        primaryColor: Colors.deepPurpleAccent,
+        scaffoldBackgroundColor: Colors.grey[100],
+        textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       home: HomeScreen(favoriteBooks: favoriteBooks),
     );
@@ -40,8 +40,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedCategory = "All";
-  String searchQuery = "";
   bool isGrid = true;
 
   @override
@@ -49,135 +47,97 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("E-Library", style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF80C4FF),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      FavoritesScreen(favoriteBooks: widget.favoriteBooks),
-                ),
-              );
-            },
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.deepPurple, Colors.blueAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
+        ),
+        actions: [
           IconButton(
             icon: Icon(isGrid ? Icons.list : Icons.grid_view,
                 color: Colors.white),
-            onPressed: () {
-              setState(() {
-                isGrid = !isGrid;
-              });
-            },
+            onPressed: () => setState(() => isGrid = !isGrid),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Search books...",
-                fillColor: const Color(0xFFA8E6CF)
-                    .withOpacity(0.3), // Light green tint
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: isGrid
+              ? GridView.builder(
+                  key: const ValueKey(1),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: books.length,
+                  itemBuilder: (context, index) {
+                    return bookCard(books[index]);
+                  },
+                )
+              : ListView.builder(
+                  key: const ValueKey(2),
+                  itemCount: books.length,
+                  itemBuilder: (context, index) {
+                    return bookListTile(books[index]);
+                  },
                 ),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF6D6D6D)),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value;
-                });
-              },
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: isGrid
-                  ? GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.75,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemCount: books.length,
-                      itemBuilder: (context, index) {
-                        return bookCard(books[index]);
-                      },
-                    )
-                  : ListView.builder(
-                      itemCount: books.length,
-                      itemBuilder: (context, index) {
-                        return bookListTile(books[index]);
-                      },
-                    ),
-            ),
-          ),
-        ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.deepPurple,
+        onPressed: () {},
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
   Widget bookCard(Map<String, String> book) {
-    bool isFavorite = widget.favoriteBooks.contains(book);
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BookDetailsScreen(
-              book: book,
-              favoriteBooks: widget.favoriteBooks,
-            ),
+            builder: (context) => BookDetailsScreen(book: book),
           ),
-        ).then((_) {
-          setState(() {});
-        });
+        );
       },
       child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Stack(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 8,
+        shadowColor: Colors.deepPurpleAccent.withOpacity(0.4),
+        child: Column(
           children: [
-            Column(
-              children: [
-                Expanded(
+            Expanded(
+              child: Hero(
+                tag: book["title"]!,
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(15)),
                   child: CachedNetworkImage(
                     imageUrl: book["cover"]!,
                     fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.broken_image, size: 50),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(book["title"]!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
+              ),
             ),
-            Positioned(
-              top: 5,
-              right: 5,
-              child: IconButton(
-                icon: Icon(isFavorite ? Icons.star : Icons.star_border,
-                    color: Colors.yellow),
-                onPressed: () {
-                  setState(() {
-                    if (isFavorite) {
-                      widget.favoriteBooks.remove(book);
-                    } else {
-                      widget.favoriteBooks.add(book);
-                    }
-                  });
-                },
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Text(
+                book["title"]!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -189,99 +149,66 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget bookListTile(Map<String, String> book) {
     return ListTile(
       leading: CachedNetworkImage(
-          imageUrl: book["cover"]!, width: 50, fit: BoxFit.cover),
-      title: Text(book["title"]!),
+        imageUrl: book["cover"]!,
+        width: 50,
+        fit: BoxFit.cover,
+        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+      ),
+      title: Text(book["title"]!,
+          style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text("Author: ${book["author"]!}"),
+      trailing: const Icon(Icons.arrow_forward_ios,
+          size: 18, color: Colors.deepPurple),
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BookDetailsScreen(
-              book: book,
-              favoriteBooks: widget.favoriteBooks,
-            ),
+            builder: (context) => BookDetailsScreen(book: book),
           ),
-        ).then((_) {
-          setState(() {});
-        });
+        );
       },
     );
   }
 }
 
-class BookDetailsScreen extends StatefulWidget {
+class BookDetailsScreen extends StatelessWidget {
   final Map<String, String> book;
-  final Set<Map<String, String>> favoriteBooks;
-  const BookDetailsScreen(
-      {super.key, required this.book, required this.favoriteBooks});
+  const BookDetailsScreen({super.key, required this.book});
 
-  @override
-  _BookDetailsScreenState createState() => _BookDetailsScreenState();
-}
-
-class _BookDetailsScreenState extends State<BookDetailsScreen> {
   @override
   Widget build(BuildContext context) {
-    bool isFavorite = widget.favoriteBooks.contains(widget.book);
-
     return Scaffold(
-      appBar: AppBar(title: Text(widget.book["title"]!)),
+      appBar: AppBar(
+        title: Text(book["title"]!),
+        backgroundColor: Colors.deepPurple,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CachedNetworkImage(imageUrl: widget.book["cover"]!, height: 200),
+            Hero(
+              tag: book["title"]!,
+              child: CachedNetworkImage(
+                imageUrl: book["cover"]!,
+                height: 250,
+                fit: BoxFit.cover,
+                errorWidget: (context, url, error) =>
+                    const Icon(Icons.broken_image, size: 100),
+              ),
+            ),
             const SizedBox(height: 10),
-            Text(widget.book["author"]!,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              book["author"]!,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
-            Text(widget.book["description"]!),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: Icon(isFavorite ? Icons.star : Icons.star_border,
-                      color: Colors.yellow),
-                  onPressed: () {
-                    setState(() {
-                      if (isFavorite) {
-                        widget.favoriteBooks.remove(widget.book);
-                      } else {
-                        widget.favoriteBooks.add(widget.book);
-                      }
-                    });
-                  },
-                ),
-                ElevatedButton(
-                  child: const Text("Download"),
-                  onPressed: () {},
-                ),
-                ElevatedButton(
-                  child: const Text("Online View"),
-                  onPressed: () {},
-                ),
-              ],
+            Text(
+              book["description"]!,
+              textAlign: TextAlign.justify,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class FavoritesScreen extends StatelessWidget {
-  final Set<Map<String, String>> favoriteBooks;
-  const FavoritesScreen({super.key, required this.favoriteBooks});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Favorites")),
-      body: ListView(
-        children: favoriteBooks
-            .map((book) => ListTile(title: Text(book["title"]!)))
-            .toList(),
       ),
     );
   }
@@ -291,14 +218,13 @@ List<Map<String, String>> books = [
   {
     "title": "The Future of AI",
     "author": "John Doe",
-    "cover":
-        "https://i.pinimg.com/736x/e2/44/c1/e244c15f6e36060c3044484b81e2737f.jpg",
+    "cover": "https://source.unsplash.com/200x300/?technology,ai",
     "description": "A deep dive into AI advancements."
   },
   {
     "title": "Mysterious Island",
     "author": "Jules Verne",
-    "cover": "https://source.unsplash.com/200x300/?adventure,fiction",
+    "cover": "https://source.unsplash.com/200x300/?adventure,book",
     "description": "An exploration of a mysterious island."
   }
 ];
