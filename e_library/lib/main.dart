@@ -2,18 +2,60 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: HomeScreen(),
-  ));
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = true; // Flag to toggle dark mode
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedTheme(
+      data: isDarkMode
+          ? ThemeData.dark().copyWith(
+              primaryColor: Colors.orangeAccent,
+              scaffoldBackgroundColor: Color(0xFF121212),
+              textTheme: GoogleFonts.latoTextTheme(),
+            )
+          : ThemeData.light().copyWith(
+              primaryColor: Colors.blueAccent,
+              scaffoldBackgroundColor: Color(0xFFFAFAFA),
+              textTheme: GoogleFonts.latoTextTheme(),
+            ),
+      duration: const Duration(milliseconds: 300), // Smooth transition duration
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: HomeScreen(
+          isDarkMode: isDarkMode,
+          toggleTheme: toggleTheme,
+        ),
+      ),
+    );
+  }
+
+  // Toggle dark and light mode
+  void toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  }
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isDarkMode;
+  final VoidCallback toggleTheme;
+
+  const HomeScreen({Key? key, required this.isDarkMode, required this.toggleTheme})
+      : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -22,6 +64,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = "All";
   String searchQuery = "";
+  bool isGrid = true;
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +77,43 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("E-Library")),
+      appBar: AppBar(
+        title: const Text("E-Library", style: TextStyle(color: Colors.white)),
+        backgroundColor: widget.isDarkMode ? Colors.orangeAccent : Colors.blueAccent,
+        actions: [
+          IconButton(
+            icon: Icon(
+              widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+              color: Colors.white,
+            ),
+            onPressed: widget.toggleTheme,
+          ),
+          IconButton(
+            icon: Icon(isGrid ? Icons.list : Icons.grid_view, color: Colors.white),
+            onPressed: () {
+              setState(() {
+                isGrid = !isGrid;
+              });
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             child: TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: "Search books...",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+                fillColor: Colors.blueAccent.withOpacity(0.2),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: const Icon(Icons.search, color: Colors.white70),
               ),
+              style: const TextStyle(color: Colors.white),
               onChanged: (value) {
                 setState(() {
                   searchQuery = value;
@@ -55,11 +124,15 @@ class _HomeScreenState extends State<HomeScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: ["All", "Fiction", "Science", "History"]
+              children: [
+                "All", "Fiction", "Science", "History", "Biography", "Self-Help", "Technology"
+              ]
                   .map((category) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: ChoiceChip(
-                          label: Text(category),
+                          label: Text(category, style: const TextStyle(color: Colors.white)),
+                          backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                          selectedColor: Colors.orangeAccent,
                           selected: selectedCategory == category,
                           onSelected: (selected) {
                             setState(() {
@@ -71,61 +144,92 @@ class _HomeScreenState extends State<HomeScreen> {
                   .toList(),
             ),
           ),
+          const SizedBox(height: 10),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: filteredBooks.length,
-                itemBuilder: (context, index) {
-                  final book = filteredBooks[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookDetailsScreen(book: book),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      elevation: 4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: CachedNetworkImage(
-                              imageUrl: book["cover"]!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) =>
-                                  const Center(child: CircularProgressIndicator()),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              book["title"]!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
+              padding: const EdgeInsets.all(12),
+              child: isGrid
+                  ? GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
                       ),
+                      itemCount: filteredBooks.length,
+                      itemBuilder: (context, index) {
+                        return bookCard(filteredBooks[index]);
+                      },
+                    )
+                  : ListView.builder(
+                      itemCount: filteredBooks.length,
+                      itemBuilder: (context, index) {
+                        return bookListTile(filteredBooks[index]);
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget bookCard(Map<String, String> book) {
+    return GestureDetector(
+      onTap: () => openBookDetails(book),
+      child: Card(
+        color: const Color(0xFF252525),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: CachedNetworkImage(
+                  imageUrl: book["cover"]!,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.error, color: Colors.red),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(
+                book["title"]!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.orangeAccent),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget bookListTile(Map<String, String> book) {
+    return ListTile(
+      leading: CachedNetworkImage(imageUrl: book["cover"]!, width: 50, fit: BoxFit.cover),
+      title: Text(book["title"]!, style: const TextStyle(color: Colors.orangeAccent)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Author: ${book["author"]!}", style: const TextStyle(color: Colors.white70)),
+          Text("Published: ${book["year"]!}", style: const TextStyle(color: Colors.white70)),
+          Text(book["description"]!, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        ],
+      ),
+      onTap: () => openBookDetails(book),
+    );
+  }
+
+  void openBookDetails(Map<String, String> book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BookDetailsScreen(book: book)),
     );
   }
 }
@@ -139,39 +243,29 @@ class BookDetailsScreen extends StatefulWidget {
 }
 
 class _BookDetailsScreenState extends State<BookDetailsScreen> {
-  bool isDownloading = false;
+  double downloadProgress = 0.0;
 
-  Future<void> downloadPDF() async {
-    setState(() {
-      isDownloading = true;
-    });
-
+  Future<void> downloadPDF(BuildContext context) async {
     String url = widget.book["pdfUrl"]!;
     String fileName = "${widget.book["title"]!.replaceAll(" ", "_")}.pdf";
+    Directory dir = await getApplicationDocumentsDirectory();
+    String savePath = "${dir.path}/$fileName";
 
     try {
-      var status = await Permission.storage.request();
-      if (!status.isGranted) {
-        setState(() => isDownloading = false);
-        return;
-      }
-
-      Directory dir = await getApplicationDocumentsDirectory();
-      String savePath = "${dir.path}/$fileName";
-
-      await Dio().download(url, savePath);
-      setState(() {
-        isDownloading = false;
-      });
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Download Complete!")));
+      await Dio().download(
+        url,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            setState(() {
+              downloadProgress = (received / total) * 100;
+            });
+          }
+        },
+      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Download Complete!")));
     } catch (e) {
-      setState(() {
-        isDownloading = false;
-      });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Download Failed!")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Download Failed!")));
     }
   }
 
@@ -183,13 +277,16 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
         children: [
           Image.network(widget.book["cover"]!, height: 250),
           Padding(
-            padding: const EdgeInsets.all(10),
-            child: Text(widget.book["description"]!),
+            padding: const EdgeInsets.all(12),
+            child: Text(widget.book["description"]!,
+                style: const TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
-            onPressed: isDownloading ? null : downloadPDF,
-            child: Text(isDownloading ? "Downloading..." : "Download PDF"),
+            onPressed: () => downloadPDF(context),
+            child: const Text("Download PDF"),
           ),
+          if (downloadProgress > 0)
+            LinearProgressIndicator(value: downloadProgress / 100),
         ],
       ),
     );
@@ -199,23 +296,32 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
 List<Map<String, String>> books = [
   {
     "title": "The Future of AI",
-    "category": "Science",
-    "cover": "https://images.unsplash.com/photo-1512820790803-83ca734da794",
-    "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    "description": "A deep dive into the future of artificial intelligence."
+    "category": "Technology",
+    "cover": "https://source.unsplash.com/200x300/?tech,ai",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "John Doe",
+    "year": "2023",
+    "description": "A deep dive into AI advancements."
   },
   {
     "title": "Mysterious Island",
     "category": "Fiction",
-    "cover": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f",
-    "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    "description": "A thrilling adventure on a deserted island."
+    "cover": "https://source.unsplash.com/200x300/?adventure,book",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Jane Smith",
+    "year": "2022",
+    "description": "An adventure story."
   },
   {
     "title": "World War II History",
     "category": "History",
     "cover": "https://images.unsplash.com/photo-1512820790803-83ca734da794",
-    "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "pdfUrl":
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "author": "Michael Brown",
+    "year": "2020",
     "description": "An in-depth analysis of World War II."
   }
 ];
