@@ -1,143 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ELibraryApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final Set<Map<String, String>> favoriteBooks = {};
-
+class ELibraryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'E-Library',
       debugShowCheckedModeBanner: false,
+      title: 'E-Library',
       theme: ThemeData(
-        primaryColor: Colors.deepPurpleAccent,
-        scaffoldBackgroundColor: Colors.grey[100],
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        primaryColor: Colors.indigo,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.indigo,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(color: Colors.black87),
+          bodyMedium: TextStyle(color: Colors.black54),
+        ),
       ),
-      home: HomeScreen(favoriteBooks: favoriteBooks),
+      home: ELibraryHomePage(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  final Set<Map<String, String>> favoriteBooks;
-  const HomeScreen({super.key, required this.favoriteBooks});
-
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  bool isGrid = true;
-
+class ELibraryHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("E-Library", style: TextStyle(color: Colors.white)),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple, Colors.blueAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        title: Text('E-Library',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
         actions: [
-          IconButton(
-            icon: Icon(isGrid ? Icons.list : Icons.grid_view,
-                color: Colors.white),
-            onPressed: () => setState(() => isGrid = !isGrid),
-          ),
+          IconButton(icon: Icon(Icons.favorite_border), onPressed: () {}),
+          IconButton(icon: Icon(Icons.person), onPressed: () {}),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: isGrid
-              ? GridView.builder(
-                  key: const ValueKey(1),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.7,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: books.length,
-                  itemBuilder: (context, index) {
-                    return bookCard(books[index]);
-                  },
-                )
-              : ListView.builder(
-                  key: const ValueKey(2),
-                  itemCount: books.length,
-                  itemBuilder: (context, index) {
-                    return bookListTile(books[index]);
-                  },
-                ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.deepPurple,
-        onPressed: () {},
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget bookCard(Map<String, String> book) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BookDetailsScreen(book: book),
-          ),
-        );
-      },
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        elevation: 8,
-        shadowColor: Colors.deepPurpleAccent.withOpacity(0.4),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Expanded(
-              child: Hero(
-                tag: book["title"]!,
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: CachedNetworkImage(
-                    imageUrl: book["cover"]!,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        const Center(child: CircularProgressIndicator()),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.broken_image, size: 50),
-                  ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search books...',
+                  prefixIcon: Icon(Icons.search, color: Colors.indigo),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(15),
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                book["title"]!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+            SizedBox(height: 20),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.7,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                ),
+                itemCount: bookList.length,
+                itemBuilder: (context, index) {
+                  return BookCard(book: bookList[index]);
+                },
               ),
             ),
           ],
@@ -145,86 +78,98 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  Widget bookListTile(Map<String, String> book) {
-    return ListTile(
-      leading: CachedNetworkImage(
-        imageUrl: book["cover"]!,
-        width: 50,
-        fit: BoxFit.cover,
-        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
-      ),
-      title: Text(book["title"]!,
-          style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text("Author: ${book["author"]!}"),
-      trailing: const Icon(Icons.arrow_forward_ios,
-          size: 18, color: Colors.deepPurple),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BookDetailsScreen(book: book),
-          ),
-        );
-      },
-    );
-  }
 }
 
-class BookDetailsScreen extends StatelessWidget {
-  final Map<String, String> book;
-  const BookDetailsScreen({super.key, required this.book});
+class BookCard extends StatelessWidget {
+  final Book book;
+  BookCard({required this.book});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(book["title"]!),
-        backgroundColor: Colors.deepPurple,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Hero(
-              tag: book["title"]!,
-              child: CachedNetworkImage(
-                imageUrl: book["cover"]!,
-                height: 250,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              child: Image.network(
+                book.imageUrl,
+                width: double.infinity,
                 fit: BoxFit.cover,
-                errorWidget: (context, url, error) =>
-                    const Icon(Icons.broken_image, size: 100),
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              book["author"]!,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(book.title,
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                SizedBox(height: 5),
+                Text('by ${book.author}',
+                    style: TextStyle(color: Colors.grey[600])),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                        icon: Icon(Icons.favorite_border,
+                            color: Colors.redAccent),
+                        onPressed: () {}),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(Icons.download),
+                      label: Text('Download'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              book["description"]!,
-              textAlign: TextAlign.justify,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-List<Map<String, String>> books = [
-  {
-    "title": "The Future of AI",
-    "author": "John Doe",
-    "cover": "https://source.unsplash.com/200x300/?technology,ai",
-    "description": "A deep dive into AI advancements."
-  },
-  {
-    "title": "Mysterious Island",
-    "author": "Jules Verne",
-    "cover": "https://source.unsplash.com/200x300/?adventure,book",
-    "description": "An exploration of a mysterious island."
-  }
+class Book {
+  final String title;
+  final String author;
+  final String imageUrl;
+  Book({required this.title, required this.author, required this.imageUrl});
+}
+
+List<Book> bookList = [
+  Book(
+      title: 'The Art of Programming',
+      author: 'John Smith',
+      imageUrl: 'https://source.unsplash.com/200x300/?coding'),
+  Book(
+      title: 'The Quantum Universe',
+      author: 'Sarah Johnson',
+      imageUrl: 'https://source.unsplash.com/200x300/?space'),
+  Book(
+      title: 'Digital Age Marketing',
+      author: 'Michael Brown',
+      imageUrl: 'https://source.unsplash.com/200x300/?business'),
+  Book(
+      title: 'The Last Horizon',
+      author: 'Emily Parker',
+      imageUrl: 'https://source.unsplash.com/200x300/?earth'),
 ];
