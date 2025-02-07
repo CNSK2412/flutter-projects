@@ -99,13 +99,19 @@ class BookCard extends StatelessWidget {
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              child: Image.network(
-                book.imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                child: Image.network(
+                  book.imageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(child: CircularProgressIndicator());
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset('.jpg');
+                  },
+                )),
           ),
           Padding(
             padding: EdgeInsets.all(12.0),
@@ -128,7 +134,10 @@ class BookCard extends StatelessWidget {
                         onPressed: () {}),
                     ElevatedButton.icon(
                       onPressed: () {},
-                      icon: Icon(Icons.download),
+                      icon: Icon(
+                        Icons.download,
+                        color: Colors.white,
+                      ),
                       label: Text('Download'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.indigo,
@@ -159,7 +168,8 @@ List<Book> bookList = [
   Book(
       title: 'The Art of Programming',
       author: 'John Smith',
-      imageUrl: 'https://source.unsplash.com/200x300/?coding'),
+      imageUrl:
+          'https://i.pinimg.com/736x/66/3b/b6/663bb6e1eb2ce3c375cf0d6a70d707ac.jpg'),
   Book(
       title: 'The Quantum Universe',
       author: 'Sarah Johnson',
