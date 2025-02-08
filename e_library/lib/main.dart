@@ -5,6 +5,8 @@ void main() {
 }
 
 class ELibraryApp extends StatelessWidget {
+  const ELibraryApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,6 +31,8 @@ class ELibraryApp extends StatelessWidget {
 }
 
 class ELibraryHomePage extends StatelessWidget {
+  const ELibraryHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +86,7 @@ class ELibraryHomePage extends StatelessWidget {
 
 class BookCard extends StatelessWidget {
   final Book book;
-  BookCard({required this.book});
+  const BookCard({super.key, required this.book});
 
   @override
   Widget build(BuildContext context) {
