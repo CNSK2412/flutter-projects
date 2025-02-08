@@ -101,18 +101,7 @@ class BookCard extends StatelessWidget {
           Expanded(
             child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.network(
-                  book.imageUrl,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(child: CircularProgressIndicator());
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset('.jpg');
-                  },
-                )),
+                child: Image.network(book.imageUrl)),
           ),
           Padding(
             padding: EdgeInsets.all(12.0),
