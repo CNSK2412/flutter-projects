@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Book {
   final String title;
@@ -24,15 +25,22 @@ class _HomeScreenState extends State<HomeScreen> {
     Book(
       title: 'Book Title 1',
       author: 'Author 1',
-      imageUrl: 'https://example.com/book1.jpg',
+      imageUrl: 'assets/cartoon-boy.jpg',
     ),
     Book(
       title: 'Book Title 2',
       author: 'Author 2',
-      imageUrl: 'https://example.com/book2.jpg',
+      imageUrl: 'assets/dog.jpg',
     ),
-    // Add more books here
+    Book(
+      title: 'Book Title 3',
+      author: 'Author 3',
+      imageUrl:
+          'http://i.pinimg.com/736x/e2/44/c1/e244c15f6e36060c3044484b81e2737f.jpg',
+    ),
   ];
+
+  bool isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,89 +68,143 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 10),
           Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.7,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.7,
+                        crossAxisSpacing: 15,
+                        mainAxisSpacing: 15,
+                      ),
+                      itemCount: bookList.length,
+                      itemBuilder: (context, index) {
+                        return BookCard(book: bookList[index]);
+                      },
+                    ),
+                  ),
+                ],
               ),
-              itemCount: bookList.length,
-              itemBuilder: (context, index) {
-                return BookCard(book: bookList[index]);
-              },
             ),
-          ),
+          )
         ],
       ),
     );
   }
 }
 
-class BookCard extends StatelessWidget {
+class BookCard extends StatefulWidget {
   final Book book;
   const BookCard({super.key, required this.book});
 
   @override
+  State<BookCard> createState() => _BookCardState();
+}
+
+class _BookCardState extends State<BookCard> {
+  bool isFavorite = false;
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.network(book.imageUrl)),
-          ),
-          Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(book.title,
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                SizedBox(height: 5),
-                Text('by ${book.author}',
-                    style: TextStyle(color: Colors.grey[600])),
-                SizedBox(height: 10),
-                Row(
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => BookDetails()));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                child: Image.asset(
+                  widget.book.imageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  // loadingBuilder: (context, child, loadingProgress) {
+                  //   if (loadingProgress == null) return child;
+                  //   return Center(
+                  //       child:
+                  //           CircularProgressIndicator()); // Show loader while image loads
+                  // },
+                  // errorBuilder: (context, error, stackTrace) {
+                  //   return Center(
+                  //       child: Text('Image not found')); // Handle errors
+                  // },
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.zero,
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                        icon: Icon(Icons.favorite_border,
-                            color: Colors.redAccent),
-                        onPressed: () {}),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: Icon(
-                        Icons.download,
-                        color: Colors.white,
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.book.title,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'by ${widget.book.author}',
+                              style: TextStyle(color: Colors.grey[600]),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ],
+                        ),
                       ),
-                      label: Text('Download'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(193, 2, 151, 156),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isFavorite = !isFavorite;
+                        });
+                      },
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_outline,
+                        color: isFavorite ? Colors.red : Colors.black,
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class BookDetails extends StatelessWidget {
+  const BookDetails({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Text('Hi'),
     );
   }
 }
