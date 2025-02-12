@@ -61,7 +61,7 @@ class ChatBubbleWidget extends StatelessWidget {
     return RichText(
       text: TextSpan(
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 14,
           color: isUser ? Colors.white : Colors.black,
         ),
         children: spans,

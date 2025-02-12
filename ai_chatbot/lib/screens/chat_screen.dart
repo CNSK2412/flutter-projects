@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart'; // Import the shimmer package
+import 'package:shimmer/shimmer.dart';
 import '../services/gemini_service.dart';
 import '../services/speech_service.dart';
 import '../services/storage_service.dart';
@@ -29,6 +29,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final loadedMessages = await StorageService.loadMessages();
     setState(() {
       messages = loadedMessages;
+      _scrollToBottom(); // Scroll after loading messages
     });
   }
 
@@ -45,58 +46,64 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessage(String userText) async {
+    userText = userText.trim();
     if (userText.isEmpty) return;
 
-    // Add user message to the chat
     setState(() {
       messages.add({"sender": "user", "text": userText});
       _controller.clear();
+      isLoading = true;
     });
     _scrollToBottom();
 
-    // Fetch bot response
-    setState(() {
-      isLoading = true; // Show loading indicator
-    });
-    String botResponse = await GeminiService.fetchResponse(userText);
-    botResponse = _formatBotResponse(botResponse); // Format AI response
+    try {
+      String botResponse = await GeminiService.fetchResponse(userText);
+      botResponse = _formatBotResponse(botResponse);
+      setState(() {
+        messages.add({"sender": "bot", "text": botResponse});
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        messages.add({"sender": "bot", "text": "Oops! Something went wrong."});
+        isLoading = false;
+      });
+    }
 
-    // Add bot response to the chat
-    setState(() {
-      messages.add({"sender": "bot", "text": botResponse});
-      isLoading = false; // Hide loading indicator
-    });
     _scrollToBottom();
-
-    // Save messages to storage
     StorageService.saveMessages(messages);
   }
 
   Future<void> _startListening() async {
     final recognizedText = await _speechToText.listen();
-    setState(() {
-      _controller.text = recognizedText.trim();
-    });
+    if (recognizedText.isNotEmpty) {
+      setState(() {
+        _controller.text = recognizedText.trim();
+      });
+    }
   }
 
-  /// Function to clean and format AI response
   String _formatBotResponse(String response) {
     response = response.trim();
 
-    // Ensure the response ends with proper punctuation
-    if (!response.endsWith('.') && !response.endsWith('!') && !response.endsWith('?')) {
+    // Ensure response ends with proper punctuation
+    if (!RegExp(r'[.!?]$').hasMatch(response)) {
       response += '.';
     }
 
     // Balance brackets and quotes
-    const pairs = {'(': ')', '[': ']', '{': '}', '"': '"', "'": "'"};
-    for (final open in pairs.keys) {
-      final openCount = response.split(open).length - 1;
-      final closeCount = response.split(pairs[open]!).length - 1;
-      if (openCount > closeCount) {
-        response += pairs[open]!;
-      }
-    }
+    Map<String, String> pairs = {
+      '(': ')',
+      '[': ']',
+      '{': '}',
+      '"': '"',
+      "'": "'"
+    };
+    pairs.forEach((open, close) {
+      int openCount = response.split(open).length - 1;
+      int closeCount = response.split(close).length - 1;
+      if (openCount > closeCount) response += close;
+    });
 
     return response;
   }
@@ -106,10 +113,8 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          "AI-ChatBot",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("AI-ChatBot",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blue,
         elevation: 5,
       ),
@@ -122,7 +127,7 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.all(10),
               itemBuilder: (context, index) {
                 if (index == messages.length && isLoading) {
-                  return _buildLoadingIndicator(); // Modern shimmer effect
+                  return _buildLoadingIndicator();
                 }
                 final message = messages[index];
                 return ChatBubbleWidget(
@@ -161,16 +166,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: double.infinity,
-                    height: 12,
-                    color: Colors.grey[300],
-                  ),
+                      width: double.infinity,
+                      height: 12,
+                      color: Colors.grey[300]),
                   const SizedBox(height: 5),
-                  Container(
-                    width: 150,
-                    height: 12,
-                    color: Colors.grey[300],
-                  ),
+                  Container(width: 150, height: 12, color: Colors.grey[300]),
                 ],
               ),
             ),
@@ -186,7 +186,9 @@ class _ChatScreenState extends State<ChatScreen> {
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 2)],
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 2)
+        ],
       ),
       child: Row(
         children: [
@@ -200,9 +202,10 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: const InputDecoration(
                 hintText: "Type a message...",
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               ),
-              onSubmitted: _sendMessage,
+              onSubmitted: (text) => _sendMessage(text),
             ),
           ),
           const SizedBox(width: 8),
