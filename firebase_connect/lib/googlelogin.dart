@@ -3,6 +3,7 @@ import 'package:firebase_connect/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class GoogleLogin extends StatefulWidget {
   const GoogleLogin({super.key});
@@ -80,7 +81,10 @@ class _GoogleLoginState extends State<GoogleLogin> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isLoading)
-              const CircularProgressIndicator() // Show loading indicator
+              LoadingAnimationWidget.staggeredDotsWave(
+                color: Colors.white,
+                size: 200,
+              ) // Show loading indicator
             else
               SignInButton(
                 Buttons.google,
