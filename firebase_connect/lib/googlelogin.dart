@@ -81,7 +81,7 @@ class _GoogleLoginState extends State<GoogleLogin> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isLoading)
-              LoadingAnimationWidget.staggeredDotsWave(
+              LoadingAnimationWidget.inkDrop(
                 color: Colors.white,
                 size: 200,
               ) // Show loading indicator
