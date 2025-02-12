@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackBar('Login successful');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       }
     } on FirebaseAuthException catch (e) {

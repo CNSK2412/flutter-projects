@@ -12,9 +12,16 @@ class GoogleLogin extends StatefulWidget {
 }
 
 class _GoogleLoginState extends State<GoogleLogin> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+      clientId:
+          "641705878587-b95h5sbcpu2sj4kfl839t2f01s9kc5oo.apps.googleusercontent.com");
+  bool _isLoading = false;
 
   Future<UserCredential?> signInWithGoogle(BuildContext context) async {
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
     try {
       // Step 1: Trigger Google Sign-In
       final GoogleSignInAccount? googleSignInAccount =
@@ -43,9 +50,14 @@ class _GoogleLoginState extends State<GoogleLogin> {
           await FirebaseAuth.instance.signInWithCredential(credential);
 
       // Optionally, log the user's display name (for debugging purposes)
-      print('Signed in as: ${userCredential.user?.displayName}');
+      debugPrint('Signed in as: ${userCredential.user?.displayName}');
 
-      // Return the UserCredential to the caller
+      // Step 5: Navigate to the HomePage after successful sign-in
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+
       return userCredential;
     } catch (e) {
       // Handle errors gracefully
@@ -53,6 +65,10 @@ class _GoogleLoginState extends State<GoogleLogin> {
         SnackBar(content: Text('Error signing in: $e')),
       );
       return null;
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
     }
   }
 
@@ -63,15 +79,19 @@ class _GoogleLoginState extends State<GoogleLogin> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SignInButton(
-              Buttons.google,
-              onPressed: () async {
-                await signInWithGoogle(context);
-              },
-              text: 'Sign up with Google',
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            )
+            if (_isLoading)
+              const CircularProgressIndicator() // Show loading indicator
+            else
+              SignInButton(
+                Buttons.google,
+                onPressed: () async {
+                  await signInWithGoogle(context);
+                },
+                text: 'Sign in with Google',
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
           ],
         ),
       ),
