@@ -77,7 +77,7 @@ class _GoogleLoginState extends State<GoogleLogin> {
           children: [
             if (_isLoading)
               LoadingAnimationWidget.dotsTriangle(
-                color: Colors.white,
+                color: const Color.fromARGB(255, 146, 248, 255),
                 size: 50,
               )
             else
@@ -87,6 +87,7 @@ class _GoogleLoginState extends State<GoogleLogin> {
                 text: 'Sign in with Google',
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
+                  
                 ),
               ),
           ],

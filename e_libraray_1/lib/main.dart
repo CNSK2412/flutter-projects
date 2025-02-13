@@ -1,12 +1,20 @@
+import 'package:e_libraray_1/screens/FavoritePage.dart';
+import 'package:e_libraray_1/screens/ProfilePage.dart';
+import 'package:e_libraray_1/provider/favorite_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:e_libraray_1/HomeScreen.dart';
+import 'package:e_libraray_1/screens/HomeScreen.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
-
-const customBlackColor = Color.fromARGB(255, 53, 53, 53);
-const customWhiteColor = Color.fromARGB(255, 255, 255, 255);
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -17,10 +25,26 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'E-Library',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(scaffoldBackgroundColor: customWhiteColor),
-      home: Scaffold(
-        body: BottomBar(),
+      theme: ThemeData(
+        primaryColor: const Color.fromARGB(255, 2, 151, 156),
+        scaffoldBackgroundColor: Colors.white,
       ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomeScreen(),
+        '/favorites': (context) => FavoritePage(),
+        '/profile': (context) => ProfilePage(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/bookDetails') {
+          final book = settings.arguments as Book;
+          return MaterialPageRoute(
+            builder: (context) => BookDetails(book: book),
+          );
+        }
+        return null;
+      },
+      home: const BottomBar(),
     );
   }
 }
@@ -32,34 +56,35 @@ class BottomBar extends StatefulWidget {
   State<BottomBar> createState() => _BottomBarState();
 }
 
-class _BottomBarState extends State<BottomBar>
-    with SingleTickerProviderStateMixin {
+class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
-  final List<Widget> _pages = [
-    Center(child: HomeScreen()),
-    Center(child: Text('Favorites Page')),
-    Center(child: Text('Notification Page')),
-    Center(child: Text('Profile Page')),
+
+  static final List<Widget> _pages = [
+    HomeScreen(),
+    FavoritePage(),
+    const ProfilePage(),
   ];
+
+  void _onItemTapped(int index) {
+    if (_selectedIndex != index) {
+      setState(() => _selectedIndex = index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: ConvexAppBar(
-        backgroundColor: const Color.fromARGB(255, 2, 151, 156),
+        backgroundColor: Theme.of(context).primaryColor,
         style: TabStyle.titled,
-        items: [
+        items: const [
           TabItem(icon: Icons.home, title: 'Home'),
           TabItem(icon: Icons.favorite_outline, title: 'Favorites'),
-          TabItem(icon: Icons.notifications_outlined, title: 'Notifications'),
           TabItem(icon: Icons.account_circle_outlined, title: 'Profile'),
         ],
-        initialActiveIndex: 0,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        initialActiveIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
