@@ -2,7 +2,7 @@ import 'package:e_libraray_1/screens/FavoritePage.dart';
 import 'package:e_libraray_1/screens/ProfilePage.dart';
 import 'package:e_libraray_1/provider/favorite_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:e_libraray_1/screens/HomeScreen.dart';
+import 'package:e_libraray_1/screens/HomeScreen/HomeScreen.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:provider/provider.dart';
 
