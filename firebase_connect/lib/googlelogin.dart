@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 
 class GoogleLogin extends StatefulWidget {
   const GoogleLogin({super.key});
@@ -17,18 +18,16 @@ class _GoogleLoginState extends State<GoogleLogin> {
       clientId:
           "641705878587-b95h5sbcpu2sj4kfl839t2f01s9kc5oo.apps.googleusercontent.com");
   bool _isLoading = false;
+  final FirebaseInAppMessaging _fiam = FirebaseInAppMessaging.instance;
 
-  Future<UserCredential?> signInWithGoogle(BuildContext context) async {
-    setState(() {
-      _isLoading = true; // Show loading indicator
-    });
-
+  Future<UserCredential?> _signInWithGoogleLogic(BuildContext context) async {
     try {
-      // Step 1: Trigger Google Sign-In
+      setState(() {
+        _isLoading = true;
+      });
+
       final GoogleSignInAccount? googleSignInAccount =
           await _googleSignIn.signIn();
-
-      // Handle case where user cancels the sign-in process
       if (googleSignInAccount == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Google sign-in was canceled.')),
@@ -36,24 +35,19 @@ class _GoogleLoginState extends State<GoogleLogin> {
         return null;
       }
 
-      // Step 2: Get authentication details from the Google account
       final GoogleSignInAuthentication googleSignInAuthentication =
           await googleSignInAccount.authentication;
 
-      // Step 3: Create OAuth credentials for Firebase
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
 
-      // Step 4: Sign in with Firebase using the credentials
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
-      // Optionally, log the user's display name (for debugging purposes)
-      debugPrint('Signed in as: ${userCredential.user?.displayName}');
+      _fiam.triggerEvent("successful_signin");
 
-      // Step 5: Navigate to the HomePage after successful sign-in
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
@@ -61,14 +55,13 @@ class _GoogleLoginState extends State<GoogleLogin> {
 
       return userCredential;
     } catch (e) {
-      // Handle errors gracefully
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error signing in: $e')),
       );
       return null;
     } finally {
       setState(() {
-        _isLoading = false; // Hide loading indicator
+        _isLoading = false;
       });
     }
   }
@@ -83,14 +76,12 @@ class _GoogleLoginState extends State<GoogleLogin> {
             if (_isLoading)
               LoadingAnimationWidget.inkDrop(
                 color: Colors.white,
-                size: 200,
-              ) // Show loading indicator
+                size: 100,
+              )
             else
               SignInButton(
                 Buttons.google,
-                onPressed: () async {
-                  await signInWithGoogle(context);
-                },
+                onPressed: () => _signInWithGoogleLogic(context),
                 text: 'Sign in with Google',
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
