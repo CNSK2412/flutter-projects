@@ -13,7 +13,7 @@ class FavoritePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 2, 151, 156),
-        title: const Text('Favorites'),
+        title: const Text('Favorites',style: TextStyle(color: Colors.white),),
       ),
       body: favorites.isEmpty
           ? const Center(

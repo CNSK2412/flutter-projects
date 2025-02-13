@@ -21,22 +21,22 @@ class _BookDetailsState extends State<BookDetails> {
           widget.book.title,
           style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_outline,
-              color: isFavorite
-                  ? const Color.fromARGB(255, 255, 0, 0)
-                  : const Color.fromARGB(255, 0, 0, 0),
-            ),
-            onPressed: () {
-              setState(() {
-                isFavorite = !isFavorite;
-              });
-              // Handle favorite action if needed
-            },
-          )
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(
+        //       isFavorite ? Icons.favorite : Icons.favorite_outline,
+        //       color: isFavorite
+        //           ? const Color.fromARGB(255, 255, 0, 0)
+        //           : const Color.fromARGB(255, 0, 0, 0),
+        //     ),
+        //     onPressed: () {
+        //       setState(() {
+        //         isFavorite = !isFavorite;
+        //       });
+        //       // Handle favorite action if needed
+        //     },
+        //   )
+        // ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -77,7 +77,6 @@ class _BookDetailsState extends State<BookDetails> {
               ),
               SizedBox(height: 20),
 
-              // Description (You can add your own description here)
               Text(
                 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam varius ligula at nisl gravida, nec luctus felis volutpat. Curabitur auctor nulla ut eros ullamcorper, vitae auctor est varius. Ut ultricies odio a magna auctor, a aliquet sapien varius.',
                 style: TextStyle(
@@ -87,18 +86,20 @@ class _BookDetailsState extends State<BookDetails> {
               ),
               SizedBox(height: 20),
 
-              // Maybe you could add buttons for actions (like borrowing or saving)
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Add action like "Borrow Book" or "Add to Wishlist"
+                    
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                     backgroundColor: Color.fromARGB(193, 2, 151, 156),
                     textStyle: TextStyle(fontSize: 16),
                   ),
-                  child: Text('Download'),
+                  child: Text(
+                    'Download',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
