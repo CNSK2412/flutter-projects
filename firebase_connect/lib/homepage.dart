@@ -1,3 +1,4 @@
+import 'package:firebase_connect/googlelogin.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -42,7 +43,10 @@ class HomePage extends StatelessWidget {
       );
 
       // Optionally, navigate back to the login page or clear the session
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => GoogleLogin()),
+      );
     }
   }
 
