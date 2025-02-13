@@ -69,6 +69,8 @@ class HomePage extends StatelessWidget {
                   _signOut(context), // Call the new sign-out function
               color: Colors.lightBlueAccent,
               child: Text('Sign Out'),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           ],
         ),

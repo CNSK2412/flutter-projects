@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 
+
 class GoogleLogin extends StatefulWidget {
   const GoogleLogin({super.key});
 
@@ -48,6 +49,7 @@ class _GoogleLoginState extends State<GoogleLogin> {
 
       _fiam.triggerEvent("successful_signin");
 
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
@@ -74,9 +76,9 @@ class _GoogleLoginState extends State<GoogleLogin> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isLoading)
-              LoadingAnimationWidget.inkDrop(
+              LoadingAnimationWidget.dotsTriangle(
                 color: Colors.white,
-                size: 100,
+                size: 50,
               )
             else
               SignInButton(
