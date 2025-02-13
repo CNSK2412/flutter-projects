@@ -29,21 +29,6 @@ class MyApp extends StatelessWidget {
         primaryColor: const Color.fromARGB(255, 2, 151, 156),
         scaffoldBackgroundColor: Colors.white,
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => HomeScreen(),
-        '/favorites': (context) => FavoritePage(),
-        '/profile': (context) => ProfilePage(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/bookDetails') {
-          final book = settings.arguments as Book;
-          return MaterialPageRoute(
-            builder: (context) => BookDetails(book: book),
-          );
-        }
-        return null;
-      },
       home: const BottomBar(),
     );
   }

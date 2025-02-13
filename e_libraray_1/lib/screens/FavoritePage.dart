@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../provider/favorite_provider.dart';
-import 'HomeScreen.dart'; // Ensure this path is correct relative to your project structure
+import '../provider/favorite_provider.dart'; // Ensure this path is correct relative to your project structure
 
 class FavoritePage extends StatelessWidget {
   const FavoritePage({super.key});
@@ -28,25 +27,16 @@ class FavoritePage extends StatelessWidget {
               separatorBuilder: (context, index) => const Divider(),
               itemBuilder: (context, index) {
                 final book = favorites[index];
-                return InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/bookDetails',
-                      arguments: book, // Pass book as an argument
-                    );
-                  },
-                  child: ListTile(
-                    title: Text(
-                      book,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.favorite, color: Colors.red),
-                      onPressed: () {
-                        favoriteProvider.toggleFavorite(book);
-                      },
-                    ),
+                return ListTile(
+                  title: Text(
+                    book,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.favorite, color: Colors.red),
+                    onPressed: () {
+                      favoriteProvider.toggleFavorite(book);
+                    },
                   ),
                 );
               },
