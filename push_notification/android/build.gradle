@@ -1,3 +1,18 @@
+buildscript {
+    ext.kotlin_version = '2.0.0'
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.3.0' // Updated to latest
+        classpath 'com.google.gms:google-services:4.4.2' // Firebase services
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0" // Updated Kotlin plugin version
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -6,7 +21,9 @@ allprojects {
 }
 
 plugins {
-    id 'com.google.gms.google-services' version '4.4.2' apply false
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android' // Correct Kotlin plugin for Android
+    id 'com.google.gms.google-services' // Firebase services plugin
 }
 
 rootProject.buildDir = "../build"

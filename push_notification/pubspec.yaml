@@ -40,7 +40,6 @@ dependencies:
   firebase_in_app_messaging: ^0.8.1+2
   firebase_messaging: ^15.2.2
   firebase_cloud_messaging_flutter: ^1.0.6
-  flutter_local_authentication: ^13.0.0
 
 dev_dependencies:
   flutter_test:
